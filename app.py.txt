@@ -1,0 +1,34 @@
+from flask import Flask, request, jsonify
+from wordcloud import WordCloud
+import base64
+from io import BytesIO
+import matplotlib.pyplot as plt
+
+app = Flask(__name__)
+
+def sentiment(text):
+    return {"positive": 60, "neutral": 20, "negative": 20}
+
+def make_wordcloud(text):
+    wc = WordCloud(width=400, height=200).generate(text)
+    img = BytesIO()
+    plt.imshow(wc)
+    plt.axis("off")
+    plt.savefig(img, format="png")
+    img.seek(0)
+    return "data:image/png;base64," + base64.b64encode(img.getvalue()).decode()
+
+@app.route("/analyze-full", methods=["POST"])
+def analyze_full():
+    data = request.json
+    text = data["text"]
+
+    return jsonify({
+        "analysis_with_theory": "Theory-based analysis...",
+        "analysis_ai_only": "General AI analysis...",
+        "sentiment": sentiment(text),
+        "wordcloud": make_wordcloud(text)
+    })
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
